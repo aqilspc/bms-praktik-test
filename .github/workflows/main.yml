@@ -13,25 +13,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Install dependencies and Ansible
-        run: |
-          sudo apt-get update -q
-          sudo apt-get install -y ansible
-        env:
-          DEBIAN_FRONTEND: noninteractive
-
-      - name: Deploy with Ansible
-        run: |
-          SERVER_IP= ${{ secrets.IP_ADDR }}
-          SSH_USERNAME= ${{ secrets.SSH_USER }}
-          SSH_PASSWORD= ${{ secrets.SSH_PW }}
-
-          sshpass -p "$SSH_PASSWORD" ssh "$SSH_USERNAME@$SERVER_IP" "mkdir -p ~/ansible_aqil"
-
-          scp -o StrictHostKeyChecking=no abdullohAqil/bms-praktik-test/deploy.yml "$SSH_USERNAME@$SERVER_IP:~/ansible_aqil/deploy.yml"
-          scp -o StrictHostKeyChecking=no abdullohAqil/bms-praktik-test/inventory.ini "$SSH_USERNAME@$SERVER_IP:~/ansible_aqil/inventory.ini"
-          
-          sshpass -p "$SSH_PASSWORD" ssh "$SSH_USERNAME@$SERVER_IP" "ansible-playbook ~/ansible_aqil/deploy.yml"
-
-        env:
-          SSH_PASS: ${{ secrets.SSH_PW }}
+      - name: Deployment
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.IP_ADDR }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PW }}
+          port: 22
+          script: |
+            ansible-playbook ~/abdullohAqil/bms-praktik-test/deploy.yml
