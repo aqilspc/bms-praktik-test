@@ -21,4 +21,5 @@ jobs:
           password: ${{ secrets.SSH_PW }}
           port: 22
           script: |
-            ansible-playbook ~/abdullohAqil/bms-praktik-test/deploy.yml
+            ansible-playbook --inventory-file=invetory.ini ~/abdullohAqil/bms-praktik-test/deploy.yml
+            curl -i localhost:5758
