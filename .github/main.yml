@@ -1,0 +1,41 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install dependencies and Ansible
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y ansible
+        env:
+          DEBIAN_FRONTEND: noninteractive
+
+      - name: Deploy with Ansible
+        run: |
+          # Set your server's IP address, username, and password
+          SERVER_IP= ${{ secrets.IP_ADDR }}
+          SSH_USERNAME= ${{ secrets.SSH_USER }}
+          SSH_PASSWORD= ${{ secrets.SSH_PW }}
+
+          # Create a directory for Ansible files on the server
+          sshpass -p "$SSH_PASSWORD" ssh "$SSH_USERNAME@$SERVER_IP" "mkdir -p ~/ansible_aqil"
+
+          # Copy deploy.yml and inventory.ini to the server
+          scp -o StrictHostKeyChecking=no abdullohAqil/bms-praktik-test/deploy.yml "$SSH_USERNAME@$SERVER_IP:~/ansible_aqil/deploy.yml"
+          scp -o StrictHostKeyChecking=no abdullohAqil/bms-praktik-test/inventory.ini "$SSH_USERNAME@$SERVER_IP:~/ansible_aqil/inventory.ini"
+
+          # Run Ansible playbook on the server
+          sshpass -p "$SSH_PASSWORD" ssh "$SSH_USERNAME@$SERVER_IP" "ansible-playbook ~/ansible_aqil/deploy.yml"
+
+        env:
+          SSH_PASS: ${{ secrets.SSH_PW }}
